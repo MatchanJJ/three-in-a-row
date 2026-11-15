@@ -23,7 +23,7 @@ Backend credentials are not included in the repository. Create `.env.local` usin
 4. Keep email/password sign-up enabled. This version uses the default configuration with email verification off. If enabling verification, implement the verification screen before requiring it. Managed Auth stores passwords and sessions; the application never stores password hashes itself.
 5. For development use `http://localhost:3000`; localhost origins are enabled by default.
 
-Configured development backend: Neon project `royal-dew-90844693`, branch `br-odd-heart-aoqifait` (`development`). Application tables are separate from the managed `neon_auth` schema.
+Development backend: Neon project `royal-dew-90844693`, branch `br-odd-heart-aoqifait` (`development`). The deployed game uses the separate Neon project `icy-darkness-98008167`, branch `br-restless-salad-b3n87idb` (`production`). Application tables are separate from the managed `neon_auth` schema.
 
 ## Publish to Vercel
 
@@ -45,6 +45,12 @@ Configured development backend: Neon project `royal-dew-90844693`, branch `br-od
 For challenge submission, capture desktop, mobile, and celebration screenshots. At https://apply.capm.us choose **1) Tic-Tac-Toe**, and provide the production URL, public GitHub URL, and screenshots. A demo video is optional.
 
 Copy credentials privately into Vercel's environment-variable settings; `.gitignore` excludes environment files, `node_modules`, `.next`, and `.vercel`.
+
+## Troubleshoot an online 503
+
+An empty player profile can load successfully even when game database queries fail. Successful signup or login also does not prove that the game tables exist.
+
+Check the Neon project, branch, and database used by Vercel's production `DATABASE_URL`. That database needs all four application tables: `guest_players`, `game_rooms`, `game_results`, and `request_limits`. Enabling Neon Auth creates its own `neon_auth` tables; it does not apply `db/schema.sql`. Apply the repository schema to each database used for production or previews, even if it was already applied to a different development database.
 
 ## Checks
 
