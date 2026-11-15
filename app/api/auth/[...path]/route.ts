@@ -4,14 +4,21 @@ async function handler(
   request: Request,
   context: { params: Promise<{ path: string[] }> },
 ) {
-  if (!process.env.NEON_AUTH_BASE_URL)
+  try {
+    const handlers = getAuth().handler();
+    const method = request.method as keyof typeof handlers;
+    return await handlers[method](request, context);
+  } catch {
+    // Keep configuration and upstream failures in the auth client's JSON format.
     return Response.json(
-      { error: { message: "Accounts are not configured yet." } },
+      {
+        error: {
+          message: "Account service is unavailable. Please try again shortly.",
+        },
+      },
       { status: 503 },
     );
-  const handlers = getAuth().handler();
-  const method = request.method as keyof typeof handlers;
-  return handlers[method](request, context);
+  }
 }
 export {
   handler as GET,

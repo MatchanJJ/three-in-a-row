@@ -1,0 +1,30 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run typecheck
+      - name: Check production server without backend credentials
+        env:
+          # An Auth URL without its cookie secret must still return JSON errors.
+          NEON_AUTH_BASE_URL: https://auth.invalid/neondb/auth
+        run: |
+          npm start -- --port 3002 > /tmp/three-in-a-row.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"; cat /tmp/three-in-a-row.log' EXIT
+          npm run test:deployment

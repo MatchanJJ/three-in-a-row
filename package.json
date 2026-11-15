@@ -2,12 +2,16 @@
   "name": "three-in-a-row",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "test": "node --test tests/game.test.mjs",
     "test:online": "node tests/online-smoke.mjs",
+    "test:deployment": "node tests/deployment-smoke.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
