@@ -12,7 +12,7 @@ Winners get confetti and an "ABSOLUTE CINEMA" or "LET THEM COOK" meme card. Onli
 
 ## Run
 
-Requires Node.js 20.9+ and npm. Node.js 22 or 24 is recommended.
+Requires Node.js 24.x and npm, matching the runtime selected for Vercel and CI.
 
 ```sh
 npm ci
@@ -21,7 +21,7 @@ npm run dev
 
 Open http://localhost:3000. Local play works without environment variables or an online backend.
 
-This working copy already has local backend configuration in `.env.local`. That file contains secrets: keep it out of Git, screenshots, and public source archives.
+Backend credentials are not included in the repository. Create `.env.local` using the setup below to enable online play. Keep it out of Git, screenshots, and public source archives.
 
 ## Configure another environment
 
@@ -35,14 +35,24 @@ Configured development backend: Neon project `royal-dew-90844693`, branch `br-od
 
 ## Publish to Vercel
 
-1. Create a **public** GitHub repository and push the project. `.gitignore` excludes `.env.local`, `node_modules`, and `.next`.
-2. Import the repository into Vercel. Keep the detected **Next.js** framework and default build command.
-3. Add the three server-only environment variables above to Vercel. Use a separate production branch/database when moving beyond the application demo. Run the application schema on that branch and use its own Auth URL.
-4. Deploy. Add the exact Vercel production origin (for example `https://three-in-a-row.vercel.app`) to that branch's Neon Auth **trusted domains**, with scheme and no trailing slash. Redeploy if environment variables changed.
-5. Check sign-up, sign-in, an online room from two browsers/devices, a win, a draw, and a mutual rematch on the **production** URL.
-6. Capture desktop, mobile, and celebration screenshots. At https://apply.capm.us choose **1) Tic-Tac-Toe**, and provide the production URL, public GitHub URL, and screenshots. A demo video is optional.
+1. Run `npm ci`, `npm test`, and `npm run build`, then push the changes to the existing [GitHub repository](https://github.com/MatchanJJ/three-in-a-row). Make it public if submitting it for the challenge. GitHub Actions repeats the rules, build, type, and production smoke checks without backend secrets.
+2. Import the repository into Vercel. Select the repository root, **Next.js**, the default `npm run build` command, and the default output directory. `package.json` selects Node.js 24.x. `vercel.json` places server functions in Singapore (`sin1`) near the documented Neon database; update that region if your production database is elsewhere. No custom rewrites or static export are needed. See [Vercel Node versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions) and [region configuration](https://vercel.com/docs/project-configuration/vercel-json#regions).
+3. Add these variables to Vercel's **Production** environment before deploying:
 
-Existing `.env.local` values are intentionally omitted from downloadable archives. Copy them privately into Vercel's environment-variable settings. Never put a database connection string into a `NEXT_PUBLIC_*` variable.
+   | Variable | Value |
+   | --- | --- |
+   | `DATABASE_URL` | Pooled connection string for the production database with `db/schema.sql` applied. |
+   | `NEON_AUTH_BASE_URL` | Managed Auth URL for that same database branch, including `/neondb/auth` (or your database name). |
+   | `NEON_AUTH_COOKIE_SECRET` | A private random secret of at least 32 characters, kept stable across deployments. |
+
+   Generate a cookie secret privately with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Use a separate production branch/database when moving beyond the application demo. Apply the schema once during setup; builds do not create or migrate tables. Never use `NEXT_PUBLIC_*` for these variables.
+4. Deploy, then add the exact Vercel production origin (for example `https://three-in-a-row.vercel.app`) to that database branch's Neon Auth **trusted domains**, with scheme and no trailing slash. Add custom-domain origins too. Follow the [Neon Next.js setup](https://neon.com/docs/auth/quick-start/nextjs-api-only). Redeploy after changing Vercel environment variables. Changing the cookie secret invalidates cached session cookies.
+5. Open `/api/player` on the production URL: `configured: true` means the database URL is present, and `accounts: true` means the Auth URL is present; these flags alone do not verify the database schema or login. Check sign-up, sign-in, sign-out, session restoration, a room from two browsers/devices, a win, a draw, and a mutual rematch. Local play remains available when the backend is absent or unavailable.
+6. For **Preview** deployments, use a development Neon branch and its own three environment variables, and register each preview origin with that branch's trusted domains. Leaving preview variables unset gives local-only play. Avoid pointing previews at production player data.
+
+For challenge submission, capture desktop, mobile, and celebration screenshots. At https://apply.capm.us choose **1) Tic-Tac-Toe**, and provide the production URL, public GitHub URL, and screenshots. A demo video is optional.
+
+Copy credentials privately into Vercel's environment-variable settings; `.gitignore` excludes environment files, `node_modules`, `.next`, and `.vercel`.
 
 ## Checks
 
@@ -53,6 +63,17 @@ npm run build
 ```
 
 The rules suite checks all winning lines for both players, invalid moves, win/draw scoring, round transitions, and every legal completed game (255,168 paths).
+
+To check a production build without backend credentials, leave `DATABASE_URL`, `NEON_AUTH_BASE_URL`, and `NEON_AUTH_COOKIE_SECRET` unset (including in `.env.local`), then run in two terminals:
+
+```sh
+npm run build
+npm start -- --port 3002
+# In the second terminal:
+npm run test:deployment
+```
+
+This read-only smoke check covers the rendered page, icon, local-only profile, JSON auth failure responses, and origin protection. It also catches a partially configured Auth URL with a missing cookie secret. `TEST_BASE_URL` can select another local port. CI runs this check automatically; online functionality still needs the backend checks below.
 
 For the online integration checks, start a development server on port 3002:
 
