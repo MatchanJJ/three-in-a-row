@@ -8,6 +8,7 @@
     "start": "next start --hostname 127.0.0.1",
     "test": "node --test tests/game.test.mjs",
     "test:online": "node tests/online-smoke.mjs",
+    "test:deployment": "node tests/deployment-smoke.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
