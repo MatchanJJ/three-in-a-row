@@ -1,111 +1,73 @@
 # Three in a Row
 
-A React / Next.js tic-tac-toe game built by Mark Jade Palma with AI assistance for the SUpost junior developer challenge.
+Two players. Nine squares. A little friendly competition.
 
-## Play modes
+Play tic-tac-toe with someone beside you or challenge a friend online. Take turns placing **X** and **O**, build a winning line, and keep the rivalry going with another round.
 
-- **One device:** two players share a board. New Game keeps the match score and alternates the starter. Reset scores starts a fresh match.
-- **Online guest:** enter a display name, create a private room, and share its 8-character code. A friend chooses a guest name or signs in, then joins from another device.
-- **Online account:** sign up or sign in with email/password. Completed online rounds add to your persistent wins, losses, and draws. Local games do not affect your account record.
+[Play Three in a Row](https://three-in-a-row-alpha.vercel.app/)
 
-Winners get confetti and an "ABSOLUTE CINEMA" or "LET THEM COOK" meme card. Online opponents get an "EMOTIONAL DAMAGE" reaction. Celebrations clear after four seconds, can be replayed, never block controls, and are hidden when reduced motion is enabled.
+## How to win
 
-## Run
+1. Choose an empty square to place your mark.
+2. Let your friend take their turn.
+3. Get three of your marks in a row, column, or diagonal to win.
 
-Requires Node.js 24.x and npm, matching the runtime selected for Vercel and CI.
+If all nine squares fill up without a winning line, the round is a draw. Once a round ends, the board locks until you start the next one. X starts the first round; the starting player alternates after that.
 
-```sh
-npm ci
-npm run dev
-```
+## Play together on one device
 
-Open http://localhost:3000. Local play works without environment variables or an online backend.
+Select **One device (Local 2P)** and share your phone, tablet, or computer. No account is needed.
 
-Backend credentials are not included in the repository. Create `.env.local` using the setup below to enable online play. Keep it out of Git, screenshots, and public source archives.
+- The highlighted player card and message above the board show whose turn it is.
+- **New Game** clears the board, keeps the scores, and swaps who starts. You can also use it to restart an unfinished round.
+- **Reset scores** opens a confirmation. Choose **Reset match** to clear the board and all scores, with X starting again.
 
-## Configure another environment
+Local scores last while the page stays open. Refreshing the page starts a fresh local match. Local rounds do not count toward an account's online record.
 
-1. Create a Neon project in an AWS region and enable Managed Better Auth for its database. This project uses Singapore (`aws-ap-southeast-1`).
-2. Run `db/schema.sql` on the application database. In the SQL editor, run the file as a script; with a prepared-statement client, execute each statement separately.
-3. Copy `.env.example` to `.env.local`. Set the pooled `DATABASE_URL`, the branch's `NEON_AUTH_BASE_URL`, and a new random `NEON_AUTH_COOKIE_SECRET` of at least 32 characters. All three variables are server-only.
-4. Keep email/password sign-up enabled. This version uses the default configuration with email verification off. If enabling verification, implement the verification screen before requiring it. Managed Auth stores passwords and sessions; the application never stores password hashes itself.
-5. For development use `http://localhost:3000`; localhost origins are enabled by default.
+## Play a friend online
 
-Configured development backend: Neon project `royal-dew-90844693`, branch `br-odd-heart-aoqifait` (`development`). Application tables are separate from the managed `neon_auth` schema.
+Both players need an internet connection and the game open in their own browsers.
 
-## Publish to Vercel
+1. Select **Play a friend (Online rooms)**.
+2. Choose **Guest**, enter a display name, and select **Continue as guest**. You can also **Create account** or **Sign in** with email and password.
+3. One player selects **Create a room**. The host plays X.
+4. Select **Copy code** and send the eight-character code to your friend.
+5. Your friend enters it under **Room code** and selects **Join**. They play O.
+6. Once both players have joined, take turns choosing empty squares. Each move appears on both boards automatically.
 
-1. Run `npm ci`, `npm test`, and `npm run build`, then push the changes to the existing [GitHub repository](https://github.com/MatchanJJ/three-in-a-row). Make it public if submitting it for the challenge. GitHub Actions repeats the rules, build, type, and production smoke checks without backend secrets.
-2. Import the repository into Vercel. Select the repository root, **Next.js**, the default `npm run build` command, and the default output directory. `package.json` selects Node.js 24.x. `vercel.json` places server functions in Singapore (`sin1`) near the documented Neon database; update that region if your production database is elsewhere. No custom rewrites or static export are needed. See [Vercel Node versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions) and [region configuration](https://vercel.com/docs/project-configuration/vercel-json#regions).
-3. Add these variables to Vercel's **Production** environment before deploying:
+Rooms have two seats. Keep the code between you and your friend so they can claim the open seat.
 
-   | Variable | Value |
-   | --- | --- |
-   | `DATABASE_URL` | Pooled connection string for the production database with `db/schema.sql` applied. |
-   | `NEON_AUTH_BASE_URL` | Managed Auth URL for that same database branch, including `/neondb/auth` (or your database name). |
-   | `NEON_AUTH_COOKIE_SECRET` | A private random secret of at least 32 characters, kept stable across deployments. |
+### Rematches and leaving
 
-   Generate a cookie secret privately with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Use a separate production branch/database when moving beyond the application demo. Apply the schema once during setup; builds do not create or migrate tables. Never use `NEXT_PUBLIC_*` for these variables.
-4. Deploy, then add the exact Vercel production origin (for example `https://three-in-a-row.vercel.app`) to that database branch's Neon Auth **trusted domains**, with scheme and no trailing slash. Add custom-domain origins too. Follow the [Neon Next.js setup](https://neon.com/docs/auth/quick-start/nextjs-api-only). Redeploy after changing Vercel environment variables. Changing the cookie secret invalidates cached session cookies.
-5. Open `/api/player` on the production URL: `configured: true` means the database URL is present, and `accounts: true` means the Auth URL is present; these flags alone do not verify the database schema or login. Check sign-up, sign-in, sign-out, session restoration, a room from two browsers/devices, a win, a draw, and a mutual rematch. Local play remains available when the backend is absent or unavailable.
-6. For **Preview** deployments, use a development Neon branch and its own three environment variables, and register each preview origin with that branch's trusted domains. Leaving preview variables unset gives local-only play. Avoid pointing previews at production player data.
+After a win or draw, select **Rematch**. Your friend selects **Accept rematch** to start the next round. The room keeps its scores and alternates the starting player. One player cannot reset the board on their own.
 
-For challenge submission, capture desktop, mobile, and celebration screenshots. At https://apply.capm.us choose **1) Tic-Tac-Toe**, and provide the production URL, public GitHub URL, and screenshots. A demo video is optional.
+**Leave room** asks for confirmation. Confirming closes the room for both players. To play again after leaving, create a new room.
 
-Copy credentials privately into Vercel's environment-variable settings; `.gitignore` excludes environment files, `node_modules`, `.next`, and `.vercel`.
+Rooms expire 24 hours after creation. Refreshing or switching play modes does not forfeit your seat. Keep the room code: if the room does not reopen automatically, join it again in the same browser. Signed-in players can also recover their seat on another device by signing into the same account and entering the code.
 
-## Checks
+### Guests and accounts
 
-```sh
-npm test
-npm run typecheck
-npm run build
-```
+| Play as | What to expect |
+| --- | --- |
+| Guest | Choose a name and play without signing up. Your guest identity stays in the same browser; clearing browser cookies loses it. |
+| Account | Sign in with email and password to keep your online wins, losses, and draws across visits and devices. |
 
-The rules suite checks all winning lines for both players, invalid moves, win/draw scoring, round transitions, and every legal completed game (255,168 paths).
+Guest results do not transfer to an account when you sign up later. The room scoreboard shows the current match; your account record tracks completed online rounds across matches.
 
-To check a production build without backend credentials, leave `DATABASE_URL`, `NEON_AUTH_BASE_URL`, and `NEON_AUTH_COOKIE_SECRET` unset (including in `.env.local`), then run in two terminals:
+## A little celebration
 
-```sh
-npm run build
-npm start -- --port 3002
-# In the second terminal:
-npm run test:deployment
-```
+Win a round for confetti and a meme reaction. Select **Replay the glory** in local play or **Replay the drama** online to see it again. Celebrations disappear after four seconds and leave the game controls usable. They are hidden when your device requests reduced motion.
 
-This read-only smoke check covers the rendered page, icon, local-only profile, JSON auth failure responses, and origin protection. It also catches a partially configured Auth URL with a missing cookie secret. `TEST_BASE_URL` can select another local port. CI runs this check automatically; online functionality still needs the backend checks below.
+## Keyboard controls
 
-For the online integration checks, start a development server on port 3002:
+Press **Tab** to focus a board square, use the **arrow keys** to move around, then press **Enter** or **Space** to play. The turn and result messages are announced to screen readers.
 
-```sh
-npm run dev -- --port 3002
-npm run test:online
-```
+## Connection trouble?
 
-`TEST_BASE_URL` can point to another local server. The smoke checks create isolated QA guests, rooms, and a test account. Run against development, not a public production database. They test independent sessions, membership, full rooms, turn enforcement, stale moves, cross-origin requests, win/draw scoring, mutual rematches, account signup/signout/signin, and persistent records. Generated test credentials are never printed.
+If online play cannot connect, select **Retry connection** when it appears. During a match, temporary interruptions retry automatically. Avoid clearing your browser cookies if you want to keep a guest seat.
 
-## Architecture
+You can switch to **One device** and play together while the online service is unavailable. An online service error does not reset your local game.
 
-- `app/page.tsx`: local game and mode selection.
-- `app/online-game.tsx`: guest/account lobby, room entry, synchronized board, loading and error states.
-- `app/win-celebration.tsx`: deterministic CSS animation with no remote GIF service or animation library.
-- `lib/game.mjs`: immutable reducer and pure game rules shared by the browser, server, and tests. JSDoc defines its types.
-- `app/api/auth/[...path]/route.ts`: same-origin Managed Better Auth proxy.
-- `app/api/player/route.ts`: server-validated identity, guest creation, and account record.
-- `app/api/rooms/*`: room creation/joining, private reads, moves, rematches, and closure.
-- `db/schema.sql`: guests, rooms, immutable round results, and request limits.
+---
 
-Online state lives in Postgres rather than process memory, so it works across server instances. Visible clients poll every 1.5 seconds; hidden tabs pause reads. Mutations carry a revision. A SQL compare-and-swap rejects stale concurrent updates. A result record commits in the same statement as the winning move and has a unique `(room_code, round)` key.
-
-The server decides identity, seat, turn, result, and score. A room code allows joining an open seat but does not grant outsider read/move access. Guest cookies contain random tokens; the database stores only hashes. API writes check the origin and use persistent rate limits. Explicitly leaving closes the room for both players; switching modes or refreshing does not forfeit a seat. Online rematches require both players; local New Game is immediate.
-
-## Deliberate limits
-
-- Rooms expire after 24 hours; guest sessions after 30 days. Closing a tab does not count as a forfeit. An abandoned room waits until expiry.
-- Guests resume in the same browser. Accounts can sign in elsewhere and recover their seat using the room code. Guest records do not automatically merge into a later account.
-- Updates use polling, not WebSockets.
-- Expiry prevents access but does not delete stored records. Add scheduled cleanup and retention rules for a long-running service.
-- Email verification, password recovery UI, social sign-in, spectators, matchmaking, and chat are outside this version. Complete Managed Auth's production email setup before a general public launch.
-- Google Fonts have system fallbacks; gameplay does not require the font service.
-
-Challenge: https://tremendous-tiger-a4a.notion.site/Test-1-Tic-Tac-Toe-React-App-22200bbdfc3b80d089deee909ae597e4
+Built by Mark Jade Palma with AI assistance for the SUpost junior developer challenge. For local setup and hosting instructions, see [Development and deployment](docs/DEVELOPMENT.md).
